@@ -38,22 +38,16 @@ namespace Journey.Application.UseCases.Trips.Register
 
         private void Validate(RequestRegisterTripJson request)
         {
-            //funcão devolve um valor booleano TRUE se o nome for vazio/null/em branco
-            if (string.IsNullOrWhiteSpace(request.Name))
-            {   
-                //tratamento exceção, busca mensagem no arquivo ResourceErrorMessage
-                throw new JourneyException(ResourceErrorMessage.NAME_EMPTY);
-            }
-            //valida data com UtcNow, data base para todos os países.
-            if (request.StartDate.Date < DateTime.UtcNow.Date)
-            {   
-                throw new JourneyException(ResourceErrorMessage.DATE_TRIP_MUST_BE_LATER_THAN_TODAY);
-            }
-            //valida janela das datas.
-            if (request.EndDate.Date < request.StartDate.Date)
-            {   
-                throw new JourneyException(ResourceErrorMessage.END_DATE_TRIP_MUST_BE_LATER_START_DATE);   
+            var validator = new RegisterTripValidator();
+
+            var result = validator.Validate(request);
+
+            if( result.IsValid == false )
+            {
+                var errorMessages = result.Errors.Select(error => error.ErrorMessage).ToList();
+
+                throw new ErronOnValidationException(errorMessages);
             }
         }
-    }
+    }  
 }
